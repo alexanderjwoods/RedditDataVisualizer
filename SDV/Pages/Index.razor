@@ -1,0 +1,108 @@
+﻿@page "/"
+
+<PageTitle>Subreddit Data Visualizer</PageTitle>
+
+<h1>Looking at the subreddit r/@SubredditName</h1>
+<hr />
+<div class="container-fluid">
+    <div class="row">
+        <label class="alert-warning @(ErrorMessage is null ? "collapse" : "")">@ErrorMessage</label>
+    </div>
+    <div class="row">
+        <div class="col-6">
+            <button class="mb-3 btn btn-lg @(IsViewingPostsByUpvote ? "btn-success" : "btn-outline-success")" @onclick="() => { IsViewingPostsByUpvote = true; }">View Posts</button>
+            <button class="mb-3 btn btn-lg @(IsViewingPostsByUpvote ? "btn-outline-success" : "btn-success")" @onclick="() => { IsViewingPostsByUpvote = false; }">View Authors</button>
+        </div>
+    </div>
+    <div class="row">
+        <h4>@Model.Posts.Count() Posts since @PollingStartedAt</h4>
+    </div>
+    <div class="row">
+    <div class="col @(!IsViewingPostsByUpvote ? "collapse" : "")">
+        <div class="table-responsive" style="max-height:700px">
+            <table class="table table-striped table-bordered table-hover table-secondary">
+                <thead>
+                    <tr class="table-primary">
+                        <th scope="col">Post Title</th>
+                        <th scope="col">Author</th>
+                        <th scope="col" class="clickable" @onclick='() => { SortedBy = "Upvotes"; }'>
+                            <i class="oi oi-thumb-up" />
+                            <i class='@(SortedBy is "Upvotes" ? "clickable oi oi-chevron-bottom" : "")' />
+                            Upvotes
+                        </th>
+                        <th scope="col" class="clickable" @onclick='() => { SortedBy = "Downvotes"; }'>
+                            <i class="oi oi-thumb-down" />
+                            <i class='@(SortedBy is "Downvotes" ? "clickable oi oi-chevron-bottom" : "")' />
+                            Downvotes
+                        </th>
+                        <th scope="col" class="clickable" @onclick='() => { SortedBy = "Comments"; }'>
+                            <i class='@(SortedBy is "Comments" ? "clickable oi oi-chevron-bottom" : "")' />
+                            Comments
+                        </th>
+                        <th scope="col">Synched On</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if(Model?.Posts != null && Model.Posts.Count() > 0)
+                    {
+                        @foreach (var post in SortedPosts)
+                        {
+                            <tr>
+                                <td>
+                                    <a href="@post.PostUrl" target="_blank" rel="noopener noreferrer">@post.Title</a>
+                                </td>
+                                <td>@post.Author</td>
+                                <td>@post.Upvotes</td>
+                                <td>@post.Downvotes</td>
+                                <td>@post.NumComments</td>
+                                <td>@post.SynchedOn</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6">Loading...</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col @(IsViewingPostsByUpvote ? "collapse" : "")">
+        <div class="table-responsive" style="max-height:700px">
+             <table class="table table-striped table-bordered table-hover table-secondary">
+                 <thead>
+                      <tr class="table-primary">
+                           <th scope="col">Author</th>
+                           <th scope="col">Number Of Posts</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model?.Posts != null && Model.Posts.Count() > 0)
+                        {
+                            @foreach (var post in CalculateAuthorPosts)
+                            {
+                                <tr>
+                                    <td>@post.Key</td>
+                                    <td>@post.Value</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5">Loading</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <button class="btn btn-primary" @onclick="DownloadData">Download Data (.csv)</button>
+        </div>
+    </div>
+</div>
